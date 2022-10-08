@@ -13,7 +13,7 @@ conda activate spaceship
 python -m pip install --upgrade pip==22.2.2
 
 # Get jupyter kernel
-conda install -n spaceship ipykernel --update-deps --force-reinstall
+conda install -n spaceship ipykernel --update-deps --force-reinstall -y
 
 # Install packages
 pip install -r requirements.txt
