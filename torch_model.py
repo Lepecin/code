@@ -106,7 +106,7 @@ def trainer(
                     sample=X, label=y, custom_model=custom_model
                 )
 
-        if (current + 1 % 10 == 0) and print_stats:
+        if print_stats:
             print(
                 f"loss: {val_loss.item():>7f}, accuracy: {val_acc.item():>7f}  [{current+1:>5d}/{iterations:>5d}]"
             )
