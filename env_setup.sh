@@ -1,5 +1,5 @@
 # Goto main
-cd /home/seelmath/Desktop/spaceship_titanic/code
+cd ~/Desktop/spaceship_titanic/code
 
 # Remove previous environment
 conda deactivate
