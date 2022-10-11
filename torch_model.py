@@ -1,28 +1,54 @@
 from torch.utils.data import Dataset
 import torch
 import copy
+from pandas import DataFrame, Series
+from typing import Tuple
+from torch import Tensor
+from numpy import ndarray as Array
 
 
 class SpaceData(Dataset):
-    def __init__(self, X, y):
+    """
+    Class for creating dataset from space data that is
+    compatible with pytorch infrastructure.
+    """
 
-        X = copy.deepcopy(X).to_numpy(dtype=float)
-        self.X = torch.tensor(X, dtype=torch.float)
+    features: "Tensor"
+    labels: "Tensor"
 
-        y = copy.deepcopy(y).to_numpy(dtype=float)
-        self.y = torch.reshape(torch.tensor(y, dtype=torch.float), (-1, 1))
+    def __init__(self: "SpaceData", X: "DataFrame", y: "Series") -> "None":
 
-    def __len__(self):
+        # Convert features and labels to numpy arrays
+        X_num: "Array" = copy.deepcopy(X).to_numpy(dtype=float)
+        y_num: "Array" = copy.deepcopy(y).to_numpy(dtype=float)
 
-        return len(self.X)
+        # Conver numpy arrays to torch tensors
+        self.features = torch.tensor(X_num, dtype=torch.float)
+        self.labels = torch.reshape(torch.tensor(y_num, dtype=torch.float), (-1, 1))
 
-    def __getitem__(self, index):
-        return self.X[index, :], self.y[index]
+    def __len__(self: "SpaceData") -> "int":
+
+        # For getting dataset length
+        return len(self.features)
+
+    def __getitem__(self: "SpaceData", index: "int") -> "Tuple[Tensor, Tensor]":
+
+        # For retreiving individual data rows
+        return self.features[index], self.labels[index]
 
 
 class CustomModel(torch.nn.Module):
-    def __init__(self):
+    """
+    Custom pytorch model used for
+    binary classification of space data.
+    """
+
+    model: "torch.nn.Sequential"
+
+    def __init__(self: "CustomModel") -> "None":
         super().__init__()
+
+        # Create sequential model
         self.model = torch.nn.Sequential(
             torch.nn.Linear(37, 75),
             torch.nn.ReLU(),
@@ -32,7 +58,7 @@ class CustomModel(torch.nn.Module):
             torch.nn.Sigmoid(),
         )
 
-    def forward(self, input):
+    def forward(self: "CustomModel", input: "Tensor") -> "Tensor":
         return self.model(input=input)
 
 
