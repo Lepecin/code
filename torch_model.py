@@ -62,35 +62,51 @@ class CustomModel(torch.nn.Module):
         return self.model(input=input)
 
 
-custom_model = CustomModel()
-
-loss_model = torch.nn.BCELoss()
-
-optimiser = torch.optim.SGD(custom_model.parameters(), lr=10 ** (-4))
+def loss_calulation(sample, label, custom_model, loss_model):
+    prediction = custom_model(sample)
+    return loss_model(prediction, label)
 
 
-def loss_calulation(dataloader, custom_model, loss_model, no_grad=False):
-
-    for (sample, label) in dataloader:
-
-        if not no_grad:
-            prediction = custom_model(sample)
-            return loss_model(prediction, label)
-        else:
-            with torch.no_grad():
-                prediction = custom_model(sample)
-                return loss_model(prediction, label)
-
-
-def accuracy_calulation(dataloader, custom_model):
-
-    for (sample, label) in dataloader:
-        with torch.no_grad():
-            prediction = custom_model(sample)
-            return (prediction.round() == label).sum() / len(sample)
+def accuracy_calulation(sample, label, custom_model):
+    prediction = custom_model(sample)
+    return (prediction.round() == label).sum() / len(sample)
 
 
 def optimise(optimiser, loss):
     optimiser.zero_grad()
     loss.backward()
     optimiser.step()
+
+
+def trainer(
+    train_dataloader,
+    val_dataloader,
+    custom_model,
+    loss_model,
+    optimiser,
+    iterations,
+    print_stats=False,
+):
+    for current in range(iterations):
+        for (X, y) in train_dataloader:
+
+            train_loss = loss_calulation(
+                sample=X, label=y, custom_model=custom_model, loss_model=loss_model
+            )
+
+            optimise(optimiser=optimiser, loss=train_loss)
+
+        for (X, y) in val_dataloader:
+            with torch.no_grad():
+                val_loss = loss_calulation(
+                    sample=X, label=y, custom_model=custom_model, loss_model=loss_model
+                )
+
+                val_acc = accuracy_calulation(
+                    sample=X, label=y, custom_model=custom_model
+                )
+
+        if (current + 1 % 10 == 0) and print_stats:
+            print(
+                f"loss: {val_loss.item():>7f}, accuracy: {val_acc.item():>7f}  [{current+1:>5d}/{iterations:>5d}]"
+            )
